@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 import os
 from supabase import create_client
+from datetime import date, timedelta
 
 app = FastAPI()
 
@@ -15,4 +16,11 @@ def health():
 @app.get("/recipes")
 def list_recipes():
     response = supabase.table("recipes").select("*").execute()
+    return response.data
+
+@app.get("/pantry/expiring")
+def check_expiring_items():
+    today = date.today()
+    soon = today + timedelta(days=2)
+    response = supabase.table("pantry_items").select("*").lte("expiry_date", soon.isoformat()).eq("consumed", False).execute()
     return response.data
